@@ -13,7 +13,7 @@ import string, random
 # Device ID: You can get the id from portal
 # https://www6.arche.blue/portal/
 #id = "device id string"
-id = None
+id = "c59edeaea5cee3"
 
 # global 
 # edge_id get by register_client_sdk
