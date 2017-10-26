@@ -12,3 +12,5 @@ PyAudio資料
     - http://takeshid.hatenadiary.jp/entry/2016/01/10/153503
     - https://www.ningendesu.net/blog/entry/655
 
+音声ファイル変換
+- http://wave.hatenablog.com/entry/2016/05/11/124500
