@@ -1,16 +1,13 @@
-import os
+# -*- coding:utf-8 -*-
+
 import soundfile as sf
 
-from utils import devide_cry_by_value
+from utils import devide_cry_by_value, import_wav_data_in_dir
 
 
 # import wav data
-files = []
 datapath = 'wav_data/'
-
-for x in os.listdir(datapath):
-    if '.wav' in x:
-        files.append(x)
+files = import_wav_data_in_dir(datapath)
 
 # devide wav data and save
 for f in files:

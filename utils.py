@@ -1,12 +1,19 @@
 # -*- coding:utf-8 -*-
 
-from scikits.talkbox.features import mfcc
 import numpy as np
-import scipy as sp
-import soundfile as sf
 import os
 
-random_state=24
+
+def import_wav_data_in_dir(datapath):
+    '''
+    datapathで指定したディレクトリ内のwav fileを全て取得
+    return : [file, file, ...]
+    '''
+    files = []
+    for x in os.listdir(datapath):
+        if '.wav' in x:
+            files.append(x)
+    return files
 
 
 def smoothing_fft(abs_cry_array):
