@@ -2,3 +2,4 @@
 .python-version
 donateacry-corpus
 data
+*.pyc
