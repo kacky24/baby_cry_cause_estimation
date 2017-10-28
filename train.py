@@ -13,7 +13,7 @@ from utils import import_wav_data_in_dir
 
 random_state=24
 label_dict = {'hu':0, 'ti':1, 'dc':2}
-datapath = 'devided_wav_data/'
+datapath = 'cry_data/devided_wav_data/'
 
 
 def main():
