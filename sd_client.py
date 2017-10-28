@@ -11,6 +11,12 @@ import sys
 import json
 import string, random
 
+from utils import devide_cry_by_value
+
+from collections import Counter
+from sklearn.externals import joblib
+from sklearn.ensemble import RandomForestClassifier
+from scikits.talkbox.features import mfcc
 # set Device ID to variable "id".
 # Device ID: You can get the id from portal
 # https://www6.arche.blue/portal/
@@ -255,41 +261,23 @@ def start_sound_detect():
     return in_stream
 
 
-# start recoding cry
-'''
-def recoding_cry():
-    CHUNK = 44100
-    FORMAT = pa.paInt16 # int16型
-    CHANNELS = 1             # ステレオ
-    RATE = 44100             # 441.kHz
-    RECORD_SECONDS = 5       # 5秒録音
-    WAVE_OUTPUT_FILENAME = "output.wav"
+def sound_classifier(clf, cry_array):
+    devided_cry_array = devide_cry_by_value(cry_array)    
+    X = []
+    for x in devided_cry_array:
+        x = np.clip(x, 1e-10, 1)
+        ceps,mspec,spec = mfcc(x, nwin=256, nfft=512, fs=8000, nceps=13)
+        X.append(np.mean(ceps, axis=0))
+    X = np.array(X)
+    pred = clf.predict(X)
+    clas = Counter(pred).most_common(1)[0][0]
+    return clas 
 
-    p = pa.PyAudio()
-    stream = p.open(format=FORMAT,
-                channels=CHANNELS,
-                rate=RATE,
-                input=True,
-                frames_per_buffer=CHUNK)
-
-    print("* recording")
-
-    frames = []
-
-    for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-        data = stream.read(CHUNK)
-        frames.append(data)
-
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-
-    print("* done recording")
-
-    print(frames)
-
+def write_class(clas):
+    with open('cry_class.txt', 'w') as f:
+       f.write(str(clas + 1)) 
     return None
-'''
+
 
 if __name__ == "__main__":
     global w_flag
@@ -299,6 +287,7 @@ if __name__ == "__main__":
 
     cry_frames = np.array([])
     cry_flag = False
+    clf = joblib.load('trained_models/clf_rf.pkl.cmp')
     
     create_edge()
 
@@ -351,9 +340,13 @@ if __name__ == "__main__":
                 print("                        Detect "+new_event['event'])
                 cry_flag = True
                 time.sleep(5)
-                sf.write("output.wav", cry_frames, in_stream._rate)
+                clas = sound_classifier(clf, cry_frames)
+                write_class(clas)
+                # sf.write("output.wav", cry_frames, in_stream._rate)
+                time.sleep(60)
                 cry_flag = False
                 cry_frames = np.array([])
+                write_class(0)
     else:
         in_stream.stop_stream()
         in_stream.close()
