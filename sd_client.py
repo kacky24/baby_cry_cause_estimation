@@ -1,10 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # vim:fileencoding=utf-8
 
 import time
 import numpy as np
 import pyaudio as pa
 import requests
+import soundfile as sf
 import sys
 import json
 import string, random
@@ -44,8 +46,15 @@ if(id is None):
 def callback(in_data, frame_count, time_info, status):
     global chunk
     global w_flag
+    global cry_flag
+    global cry_frames
 
     in_data = np.frombuffer(in_data, dtype=np.int16)    
+    if cry_flag:
+        in_data = np.array(map(float, in_data))
+        in_data[in_data > 0.0] /= float(2**15 - 1)
+        in_data[in_data <= 0.0] /= float(2**15)
+        cry_frames = np.r_[cry_frames, in_data]
     chunk = in_data.tobytes()
     w_flag = True
 
@@ -245,9 +254,51 @@ def start_sound_detect():
     in_stream.start_stream()
     return in_stream
 
+
+# start recoding cry
+'''
+def recoding_cry():
+    CHUNK = 44100
+    FORMAT = pa.paInt16 # int16型
+    CHANNELS = 1             # ステレオ
+    RATE = 44100             # 441.kHz
+    RECORD_SECONDS = 5       # 5秒録音
+    WAVE_OUTPUT_FILENAME = "output.wav"
+
+    p = pa.PyAudio()
+    stream = p.open(format=FORMAT,
+                channels=CHANNELS,
+                rate=RATE,
+                input=True,
+                frames_per_buffer=CHUNK)
+
+    print("* recording")
+
+    frames = []
+
+    for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+        data = stream.read(CHUNK)
+        frames.append(data)
+
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
+    print("* done recording")
+
+    print(frames)
+
+    return None
+'''
+
 if __name__ == "__main__":
     global w_flag
     global chunk
+    global cry_flag
+    global cry_frames
+
+    cry_frames = np.array([])
+    cry_flag = False
     
     create_edge()
 
@@ -298,6 +349,11 @@ if __name__ == "__main__":
                     e_flag = True
             if(e_flag):
                 print("                        Detect "+new_event['event'])
+                cry_flag = True
+                time.sleep(5)
+                sf.write("output.wav", cry_frames, in_stream._rate)
+                cry_flag = False
+                cry_frames = np.array([])
     else:
         in_stream.stop_stream()
         in_stream.close()
